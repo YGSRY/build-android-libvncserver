@@ -21,23 +21,12 @@ jobs:
       # Step 2: Download and set up Android NDK
       - name: Download Android NDK
         run: |
-          # Define NDK version
           export NDK_VERSION="r25c"
           export NDK_ZIP="android-ndk-${NDK_VERSION}-linux.zip"
           export NDK_URL="https://dl.google.com/android/repository/$NDK_ZIP"
 
           # Download NDK
-          echo "Downloading Android NDK from $NDK_URL"
           curl -fSL $NDK_URL -o $NDK_ZIP
-
-          # Verify if the download is successful
-          if [ ! -f "$NDK_ZIP" ] || [ $(wc -c <"$NDK_ZIP") -lt 1024 ]; then
-            echo "Failed to download Android NDK. Exiting."
-            exit 1
-          fi
-
-          # Extract NDK
-          echo "Extracting Android NDK..."
           unzip -q $NDK_ZIP -d $HOME
 
           # Set up environment variable
@@ -48,7 +37,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential cmake git autoconf automake libtool pkg-config unzip
+          sudo apt-get install -y build-essential cmake git unzip
 
       # Step 4: Build LibVNCServer
       - name: Compile LibVNCServer
@@ -60,25 +49,25 @@ jobs:
           export TARGET=aarch64-linux-android
           export API=21
 
-          # Clone LibVNCServer (if not already in the repo)
+          # Clone LibVNCServer
           git clone https://github.com/LibVNC/libvncserver.git
           cd libvncserver
 
-          # Configure the build
-          autoreconf -fiv
-          ./configure --host=$TARGET --prefix=$(pwd)/build-output \
-                      --enable-shared --disable-static \
-                      CFLAGS="--sysroot=$TOOLCHAIN/sysroot"
+          # Create a build directory and configure with CMake
+          mkdir -p build
+          cd build
+          cmake .. \
+            -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK/build/cmake/android.toolchain.cmake \
+            -DANDROID_ABI=arm64-v8a \
+            -DANDROID_PLATFORM=android-$API \
+            -DBUILD_SHARED_LIBS=ON
 
           # Build the library
-          make -j$(nproc)
-
-          # Install the library
-          make install
+          cmake --build . --target install -- -j$(nproc)
 
       # Step 5: Upload compiled library
       - name: Upload compiled binaries
         uses: actions/upload-artifact@v3
         with:
           name: libvncserver-android-arm64
-          path: libvncserver/build-output/
+          path: libvncserver/build/
