@@ -1,0 +1,63 @@
+name: Build Android libvncserver (64-bit)
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-android:
+    name: Build libvncserver for Android (64-bit)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v3
+
+      - name: Set up Android NDK
+        uses: android/ndk@v2
+        with:
+          ndk-version: r25c
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build pkg-config autoconf automake libtool
+
+      - name: Configure build environment
+        run: |
+          export ANDROID_NDK=$ANDROID_NDK_HOME
+          export TOOLCHAIN=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64
+          export API=21
+          export TARGET=aarch64-linux-android
+          export AR=$TOOLCHAIN/bin/$TARGET-ar
+          export AS=$TOOLCHAIN/bin/$TARGET-as
+          export CC=$TOOLCHAIN/bin/$TARGET$API-clang
+          export CXX=$TOOLCHAIN/bin/$TARGET$API-clang++
+          export LD=$TOOLCHAIN/bin/$TARGET-ld
+          export RANLIB=$TOOLCHAIN/bin/$TARGET-ranlib
+          export STRIP=$TOOLCHAIN/bin/$TARGET-strip
+          export SYSROOT=$TOOLCHAIN/sysroot
+          export PATH=$TOOLCHAIN/bin:$PATH
+
+      - name: Build libvncserver
+        run: |
+          mkdir -p build-android
+          cd build-android
+          cmake .. \
+            -DCMAKE_SYSTEM_NAME=Android \
+            -DCMAKE_SYSTEM_VERSION=$API \
+            -DCMAKE_ANDROID_ARCH_ABI=arm64-v8a \
+            -DCMAKE_ANDROID_NDK=$ANDROID_NDK \
+            -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK/build/cmake/android.toolchain.cmake \
+            -DCMAKE_BUILD_TYPE=Release
+          cmake --build . --config Release
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: libvncserver-android-arm64
+          path: build-android/
