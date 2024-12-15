@@ -52,7 +52,7 @@ jobs:
       # 5. Build androidvncserver (Android 64-bit)
       - name: Build androidvncserver (Android 64-bit)
         run: |
-          cd androidvncserver  # Replace with your actual source directory
+          cd path/to/your/androidvncserver  # Replace this with the correct path to your source directory
           ndk-build NDK_PROJECT_PATH=./ -j4 APP_ABI=arm64-v8a x86_64  # Specify Android architectures
 
       # 6. Upload the resulting binary as an artifact
