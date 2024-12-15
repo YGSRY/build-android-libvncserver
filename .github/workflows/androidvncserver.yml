@@ -32,9 +32,12 @@ jobs:
           wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O commandlinetools.zip
           unzip commandlinetools.zip -d $HOME/Android/Sdk/cmdline-tools
           
+          # Move the extracted folder to "latest" to match SDK structure
+          mv $HOME/Android/Sdk/cmdline-tools/cmdline-tools $HOME/Android/Sdk/cmdline-tools/latest
+
           # Install required SDK components
-          yes | $HOME/Android/Sdk/cmdline-tools/bin/sdkmanager --sdk_root=$HOME/Android/Sdk --licenses
-          yes | $HOME/Android/Sdk/cmdline-tools/bin/sdkmanager --sdk_root=$HOME/Android/Sdk "platforms;android-30" "ndk;23.1.7779620"
+          yes | $HOME/Android/Sdk/cmdline-tools/latest/bin/sdkmanager --sdk_root=$HOME/Android/Sdk --licenses
+          yes | $HOME/Android/Sdk/cmdline-tools/latest/bin/sdkmanager --sdk_root=$HOME/Android/Sdk "platforms;android-30" "ndk;23.1.7779620"
           
           # Set up environment variables
           echo "export ANDROID_HOME=$HOME/Android/Sdk" >> $GITHUB_ENV
