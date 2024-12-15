@@ -60,7 +60,8 @@ jobs:
             -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK/build/cmake/android.toolchain.cmake \
             -DANDROID_ABI=arm64-v8a \
             -DANDROID_PLATFORM=android-$API \
-            -DBUILD_SHARED_LIBS=ON
+            -DBUILD_SHARED_LIBS=ON \
+            -DCMAKE_INSTALL_PREFIX=$(pwd)/install # Specify custom install path
 
           # Build the library
           cmake --build . --target install -- -j$(nproc)
@@ -70,4 +71,4 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: libvncserver-android-arm64
-          path: libvncserver/build/
+          path: libvncserver/build/install/
