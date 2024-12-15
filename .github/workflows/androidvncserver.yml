@@ -15,37 +15,42 @@ jobs:
     steps:
       # 1. Checkout the repository
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       # 2. Set up JDK
       - name: Set up JDK 11
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v3
         with:
           java-version: '11'
           distribution: 'zulu'
 
-      # 3. Set up Android NDK and SDK
-      - name: Set up Android NDK and SDK
-        uses: actions/setup-android@v2
-        with:
-          ndk-version: '23.1.7779620'
-          sdk-version: '30.0.3'
+      # 3. Set up Android SDK and NDK manually
+      - name: Set up Android SDK and NDK
+        run: |
+          # Download and install Android SDK & NDK
+          mkdir -p $HOME/Android/Sdk
+          wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O commandlinetools.zip
+          unzip commandlinetools.zip -d $HOME/Android/Sdk/cmdline-tools
+          yes | $HOME/Android/Sdk/cmdline-tools/bin/sdkmanager --sdk_root=$HOME/Android/Sdk --licenses
+          yes | $HOME/Android/Sdk/cmdline-tools/bin/sdkmanager --sdk_root=$HOME/Android/Sdk "platforms;android-30" "ndk;23.1.7779620"
+          echo "export ANDROID_HOME=$HOME/Android/Sdk" >> $GITHUB_ENV
+          echo "export PATH=$ANDROID_HOME/tools:$ANDROID_HOME/tools/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/cmdline-tools/bin:$PATH" >> $GITHUB_ENV
 
-      # 4. Install build dependencies
+      # 4. Install build dependencies (CMake and Clang)
       - name: Install build dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential cmake clang
+          sudo apt-get install -y build-essential cmake clang wget unzip
 
-      # 5. Set up Android build for 64-bit architecture
+      # 5. Build androidvncserver (Android 64-bit)
       - name: Build androidvncserver (Android 64-bit)
         run: |
-          cd androidvncserver  # Replace with correct path to your androidvncserver source code
+          cd androidvncserver  # Replace with your actual source directory
           ndk-build NDK_PROJECT_PATH=./ -j4 APP_ABI=arm64-v8a x86_64  # Specify Android architectures
 
       # 6. Upload the resulting binary as an artifact
       - name: Upload Android 64-bit binary
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: androidvncserver-64bit-bin
           path: ./androidvncserver/libs/arm64-v8a/your_binary_file_name  # Adjust the path to match the output file
