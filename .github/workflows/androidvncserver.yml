@@ -27,14 +27,18 @@ jobs:
       # 3. Set up Android SDK and NDK manually
       - name: Set up Android SDK and NDK
         run: |
-          # Download and install Android SDK & NDK
-          mkdir -p $HOME/Android/Sdk
+          # Download and install Android SDK Command Line Tools
+          mkdir -p $HOME/Android/Sdk/cmdline-tools
           wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O commandlinetools.zip
           unzip commandlinetools.zip -d $HOME/Android/Sdk/cmdline-tools
+          
+          # Install required SDK components
           yes | $HOME/Android/Sdk/cmdline-tools/bin/sdkmanager --sdk_root=$HOME/Android/Sdk --licenses
           yes | $HOME/Android/Sdk/cmdline-tools/bin/sdkmanager --sdk_root=$HOME/Android/Sdk "platforms;android-30" "ndk;23.1.7779620"
+          
+          # Set up environment variables
           echo "export ANDROID_HOME=$HOME/Android/Sdk" >> $GITHUB_ENV
-          echo "export PATH=$ANDROID_HOME/tools:$ANDROID_HOME/tools/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/cmdline-tools/bin:$PATH" >> $GITHUB_ENV
+          echo "export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/tools:$ANDROID_HOME/tools/bin:$PATH" >> $GITHUB_ENV
 
       # 4. Install build dependencies (CMake and Clang)
       - name: Install build dependencies
