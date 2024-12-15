@@ -1,4 +1,4 @@
-name: Build androidvncserver (Linux 64-bit)
+name: Build androidvncserver (Android 64-bit)
 
 on:
   push:
@@ -25,28 +25,27 @@ jobs:
           distribution: 'zulu'
 
       # 3. Set up Android NDK and SDK
-      - name: Set up Android NDK
+      - name: Set up Android NDK and SDK
         uses: actions/setup-android@v2
         with:
           ndk-version: '23.1.7779620'
           sdk-version: '30.0.3'
 
-      # 4. Install dependencies for building (Linux cross-compilation tools)
+      # 4. Install build dependencies
       - name: Install build dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential cmake clang
 
-      # 5. Build the androidvncserver binary
-      - name: Build androidvncserver (Linux 64-bit)
+      # 5. Set up Android build for 64-bit architecture
+      - name: Build androidvncserver (Android 64-bit)
         run: |
-          cd androidvncserver  # Ensure this points to the correct directory for androidvncserver source code
-          make clean
-          make TARGET_ARCH=arm64  # Modify this according to your architecture, or make for 64-bit
+          cd androidvncserver  # Replace with correct path to your androidvncserver source code
+          ndk-build NDK_PROJECT_PATH=./ -j4 APP_ABI=arm64-v8a x86_64  # Specify Android architectures
 
-      # 6. Save the resulting binary file as an artifact
-      - name: Upload Linux binary
+      # 6. Upload the resulting binary as an artifact
+      - name: Upload Android 64-bit binary
         uses: actions/upload-artifact@v2
         with:
-          name: androidvncserver-linux-bin
-          path: ./androidvncserver/build/arm64-v8a/your_binary_file_name  # Adjust path to your built binary
+          name: androidvncserver-64bit-bin
+          path: ./androidvncserver/libs/arm64-v8a/your_binary_file_name  # Adjust the path to match the output file
