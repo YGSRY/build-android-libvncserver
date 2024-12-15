@@ -22,26 +22,26 @@ jobs:
       - name: Download Android NDK
         run: |
           # Define NDK version
-          export NDK_VERSION="25.2.9519653"
-          export NDK_ZIP="android-ndk-r${NDK_VERSION}-linux.zip"
+          export NDK_VERSION="r25c"
+          export NDK_ZIP="android-ndk-${NDK_VERSION}-linux.zip"
           export NDK_URL="https://dl.google.com/android/repository/$NDK_ZIP"
-          
+
           # Download NDK
           echo "Downloading Android NDK from $NDK_URL"
           curl -fSL $NDK_URL -o $NDK_ZIP
-          
+
           # Verify if the download is successful
           if [ ! -f "$NDK_ZIP" ] || [ $(wc -c <"$NDK_ZIP") -lt 1024 ]; then
             echo "Failed to download Android NDK. Exiting."
             exit 1
           fi
-          
+
           # Extract NDK
           echo "Extracting Android NDK..."
           unzip -q $NDK_ZIP -d $HOME
-          
+
           # Set up environment variable
-          export ANDROID_NDK=$HOME/android-ndk-r${NDK_VERSION}
+          export ANDROID_NDK=$HOME/android-ndk-${NDK_VERSION}
           echo "ANDROID_NDK=$ANDROID_NDK" >> $GITHUB_ENV
 
       # Step 3: Install dependencies
